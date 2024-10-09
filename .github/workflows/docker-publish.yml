@@ -3,28 +3,34 @@ name: Publish Docker Image to DockerHub
 on:
   push:
     tags:
-      - 'v*'  # Asegura que solo se ejecute cuando se cree un tag como 'v3'
+      - 'v*'  # Este trigger se ejecuta solo cuando se crea un tag que empieza con 'v', como 'v3'.
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest  # El job se ejecuta en un entorno Ubuntu.
 
     steps:
-      # 1. Checkout the repository
-      - name: Checkout code
-        uses: actions/checkout@v3  # Esta es la versión más reciente de checkout
-
-      # 2. Log in to DockerHub using secrets
-      - name: Log in to DockerHub
-        uses: docker/login-action@v2  # Actualizamos a la versión más reciente de login-action
+      # 1. Configurar Node.js 20 (esto es opcional, pero puede ayudar a evitar advertencias)
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          node-version: '20'
 
-      # 3. Build the Docker image
+      # 2. Checkout del repositorio
+      - name: Checkout code
+        uses: actions/checkout@v3  # Asegúrate de que estás usando la última versión.
+
+      # 3. Log in to DockerHub
+      - name: Log in to DockerHub
+        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+        # Usamos el token de acceso y nombre de usuario almacenados en los secretos de GitHub.
+
+      # 4. Construir la imagen Docker
       - name: Build Docker image
         run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/my_nginx_repo:${{ github.ref_name }} .
+        # Construimos la imagen Docker con el tag basado en el nombre del tag en GitHub.
 
-      # 4. Push the Docker image to DockerHub
+      # 5. Empujar la imagen a DockerHub
       - name: Push Docker image
         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/my_nginx_repo:${{ github.ref_name }}
+        # Empujamos la imagen al repositorio de DockerHub con el tag correspondiente.

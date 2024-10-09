@@ -3,7 +3,7 @@ name: Publish Docker Image to DockerHub
 on:
   push:
     tags:
-      - 'v*'  # Esta línea asegura que el flujo de trabajo solo se ejecute cuando se cree un tag que empiece con 'v', como 'v3'.
+      - 'v*'  # Asegura que solo se ejecute cuando se cree un tag como 'v3'
 
 jobs:
   build:
@@ -12,21 +12,19 @@ jobs:
     steps:
       # 1. Checkout the repository
       - name: Checkout code
-        uses: actions/checkout@v3  # Esta acción descarga tu código fuente para que el flujo de trabajo lo pueda usar.
+        uses: actions/checkout@v3  # Esta es la versión más reciente de checkout
 
       # 2. Log in to DockerHub using secrets
       - name: Log in to DockerHub
-        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
-        # Aquí usamos el token de acceso y el nombre de usuario almacenado en los secretos de GitHub para iniciar sesión en DockerHub.
+        uses: docker/login-action@v2  # Actualizamos a la versión más reciente de login-action
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       # 3. Build the Docker image
       - name: Build Docker image
         run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/my_nginx_repo:${{ github.ref_name }} .
-        # Aquí estamos construyendo la imagen Docker. 
-        # El tag se construye dinámicamente con el nombre del tag (por ejemplo 'v3') que activó el flujo de trabajo. 
-        # `${{ github.ref_name }}` se utiliza para capturar el nombre del tag que ha activado el evento 'push'.
 
-      # 4. Push the image to DockerHub
+      # 4. Push the Docker image to DockerHub
       - name: Push Docker image
         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/my_nginx_repo:${{ github.ref_name }}
-        # Esta línea empuja la imagen recién creada a DockerHub con el mismo tag dinámico.

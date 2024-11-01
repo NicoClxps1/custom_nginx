@@ -10,27 +10,21 @@ jobs:
     runs-on: ubuntu-latest  # El job se ejecuta en un entorno Ubuntu.
 
     steps:
-      # 1. Configurar Node.js 20 (esto es opcional, pero puede ayudar a evitar advertencias)
-      - name: Set up Node.js 20
-        uses: actions/setup-node@v3
-        with:
-          node-version: '20'
-
-      # 2. Checkout del repositorio
+      # 1. Checkout del repositorio
       - name: Checkout code
         uses: actions/checkout@v3  # Asegúrate de que estás usando la última versión.
 
-      # 3. Log in to DockerHub
+      # 2. Log in to DockerHub
       - name: Log in to DockerHub
         run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
         # Usamos el token de acceso y nombre de usuario almacenados en los secretos de GitHub.
 
-      # 4. Construir la imagen Docker
+      # 3. Construir la imagen Docker
       - name: Build Docker image
         run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/my_nginx:${{ github.ref_name }} .
         # Asegúrate de que el Dockerfile esté en el directorio actual.
 
-      # 5. Empujar la imagen a DockerHub
+      # 4. Empujar la imagen a DockerHub
       - name: Push Docker image
         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/my_nginx:${{ github.ref_name }}
         # Empujamos la imagen al repositorio de DockerHub con el tag correspondiente.
